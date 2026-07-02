@@ -1,4 +1,6 @@
 # The plaintext plan is never committed — only its encrypted form (plan.enc.js) ships.
 plan.src.html
+# The access passphrase lives here, never committed.
+.env
 node_modules/
 .DS_Store

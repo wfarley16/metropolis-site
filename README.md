@@ -29,12 +29,24 @@ controls stripped).
 
 Client-side gating is *soft* (it obscures, it isn't Fort Knox) — fine for an MVP.
 
+### The passphrase lives in `.env`
+
+The access passphrase is stored in a git-ignored `.env` file:
+
+```
+METROPOLIS_PASSPHRASE=…
+```
+
+`build.js` reads it automatically, so you never type or print it. To see it (e.g. to
+share with an investor): `cat .env`. To rotate it, edit `.env` (or delete it and
+re-run the generator) and rebuild.
+
 ### Updating the plan or passphrase
 
 ```bash
 # 1. regenerate plan.src.html from the metropolis pitch (see below), then:
-node build.js "your access passphrase"
-# 2. commit the new plan.enc.js (plan.src.html stays local / ignored)
+node build.js            # reads the passphrase from .env
+# 2. commit the new plan.enc.js (plan.src.html and .env stay local / ignored)
 git add plan.enc.js && git commit -m "Update plan"
 ```
 

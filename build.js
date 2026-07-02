@@ -14,6 +14,14 @@
 const fs = require('fs');
 const crypto = require('crypto');
 
+// Load a local .env (git-ignored) so the passphrase never needs to be typed or printed.
+if (fs.existsSync('.env')) {
+  for (const line of fs.readFileSync('.env', 'utf8').split('\n')) {
+    const m = line.match(/^\s*([A-Z_][A-Z0-9_]*)\s*=\s*(.*?)\s*$/);
+    if (m && process.env[m[1]] === undefined) process.env[m[1]] = m[2];
+  }
+}
+
 const ITER = 150000, KEYLEN = 32, DIGEST = 'sha256';
 const pass = process.argv[2] || process.env.METROPOLIS_PASSPHRASE;
 if (!pass) { console.error('Provide a passphrase: node build.js "<passphrase>"'); process.exit(1); }
