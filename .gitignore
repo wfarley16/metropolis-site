@@ -1,5 +1,6 @@
 # Plaintext docs are never committed — only the encrypted bundle (docs.enc.js) ships.
 *.src.html
+*.src.md
 # The access passphrase lives here, never committed.
 .env
 node_modules/

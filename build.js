@@ -31,7 +31,7 @@ const TREE = [
         { title: 'Generic resource abstraction', src: 'resource-resource-abstraction.src.html' },
         { title: 'UI kits / design system', src: 'resource-ui-kits.src.html' },
       ]},
-      { title: 'Config versioning / control plane', src: 'resource-control-plane.src.html' },
+      { title: 'Config versioning / control plane', src: 'resource-control-plane.src.md' },
     ]},
     { title: 'Planning spaces', src: 'resource-planning-spaces.src.html', children: [
       { title: 'artemis — first space (job hunt)', src: 'resource-artemis.src.html' },
@@ -67,7 +67,7 @@ function walk(nodes) {
     const id = 'n' + (counter++);
     const out = { id, title: n.title };
     if (n.src) {
-      if (fs.existsSync(n.src)) { ENC[id] = encrypt(fs.readFileSync(n.src)); out.doc = true; console.log(`  encrypted ${n.src} -> ${id}`); }
+      if (fs.existsSync(n.src)) { ENC[id] = encrypt(fs.readFileSync(n.src)); out.doc = true; out.fmt = n.src.endsWith('.src.md') ? 'md' : 'html'; console.log(`  encrypted ${n.src} -> ${id} (${out.fmt})`); }
       else console.error(`  MISSING ${n.src} — "${n.title}" will render as a placeholder`);
     }
     if (n.children) out.children = walk(n.children);
