@@ -24,6 +24,7 @@ function wireForm(form){
   form.addEventListener('submit', async (e) => {
     e.preventDefault();
     const data = Object.fromEntries(new FormData(form).entries());
+    data.source = location.pathname.replace(/^.*\//, '') || 'index.html'; // tag which page it came from
     const subject = form.dataset.subject || 'Metropolis enquiry';
     const btn = form.querySelector('button[type="submit"]');
     const label = btn ? btn.textContent : '';
