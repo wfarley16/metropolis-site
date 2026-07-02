@@ -22,14 +22,14 @@ const crypto = require('crypto');
 const TREE = [
   { title: 'Business plan', src: 'plan.src.html' },
   { title: 'How it works', children: [
-    { title: 'ailexandria — knowledge & memory vault' },
+    { title: 'ailexandria — knowledge & memory vault', src: 'resource-ailexandria.src.html' },
     { title: 'polis — the planning engine', src: 'resource-polis.src.html', children: [
       { title: 'Platform architecture', children: [
         { title: 'Platform API', src: 'resource-platform-api.src.html' },
         { title: 'Worker', src: 'resource-worker.src.html' },
         { title: 'Temporal — durable orchestration', src: 'resource-temporal.src.html' },
         { title: 'Generic resource abstraction', src: 'resource-resource-abstraction.src.html' },
-        { title: 'UI kits / design system' },
+        { title: 'UI kits / design system', src: 'resource-ui-kits.src.html' },
       ]},
       { title: 'Config versioning / control plane', src: 'resource-control-plane.src.html' },
     ]},
