@@ -1,0 +1,90 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Business plan — Metropolis (investors)</title>
+<meta name="robots" content="noindex">
+<link rel="icon" href="data:image/svg+xml,<svg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 100 100'><text y='.9em' font-size='90'>🏛️</text></svg>">
+<link rel="stylesheet" href="styles.css">
+<style>
+  .gatewrap{min-height:calc(100vh - 56px);display:grid;place-items:center;padding:30px 22px}
+  .gate{max-width:440px;width:100%}
+  .field{width:100%;font-size:1rem;padding:.7em .9em;border:1px solid var(--hair-2);border-radius:11px;background:var(--card);color:var(--ink)}
+  .field:focus{outline:2px solid var(--brand-2);border-color:var(--brand-2)}
+  #err{color:#b23b3a;font-size:.82rem;min-height:1.2em;margin-top:8px}
+  #planframe{width:100%;height:calc(100vh - 56px);border:0;display:block}
+  .planbar{display:flex;align-items:center;gap:12px;height:56px}
+</style>
+</head>
+<body>
+
+<div id="gateview">
+  <div class="nav"><div class="wrap">
+    <a class="serif brand" href="index.html" style="text-decoration:none;color:inherit">metropolis</a>
+    <div style="margin-left:auto"><a class="navlink" href="index.html">← Home</a></div>
+  </div></div>
+
+  <div class="gatewrap"><div class="gate">
+    <div class="card" style="padding:26px 24px">
+      <div class="kicker">For investors</div>
+      <h1 class="serif" style="font-size:1.6rem;margin:.2em 0 .2em">The Metropolis plan</h1>
+      <p style="font-size:.9rem;color:var(--ink-2);margin:0 0 18px">Enter the access passphrase to open the full business plan. Don't have one?
+        <a href="mailto:wrfarley13@gmail.com?subject=Metropolis%20plan%20access">Request access</a>.</p>
+      <form id="gateform" autocomplete="off">
+        <input id="pass" class="field" type="password" placeholder="Access passphrase" aria-label="Access passphrase" autofocus>
+        <div id="err" role="alert"></div>
+        <button class="btn" type="submit" style="width:100%;margin-top:12px" id="gobtn">Open the plan</button>
+      </form>
+      <p style="font-size:.72rem;color:var(--muted);margin:16px 0 0">The plan is encrypted; it decrypts in your browser only with the correct passphrase.
+        Figures are illustrative placeholders pending a full financial model.</p>
+    </div>
+  </div></div>
+</div>
+
+<div id="planview" hidden>
+  <div class="nav"><div class="wrap planbar">
+    <a class="serif brand" href="index.html" style="text-decoration:none;color:inherit">metropolis</a>
+    <span style="font-size:.8rem;color:var(--muted)">· business plan</span>
+    <div style="margin-left:auto;display:flex;gap:12px">
+      <button class="btn btn-ghost" style="padding:.4em .8em;font-size:.8rem" onclick="location.reload()">Lock</button>
+    </div>
+  </div></div>
+  <iframe id="planframe" title="Metropolis business plan"></iframe>
+</div>
+
+<script src="plan.enc.js"></script>
+<script>
+const b64ToBytes = b => Uint8Array.from(atob(b), c => c.charCodeAt(0));
+
+async function decryptPlan(passphrase){
+  const enc = window.__PLAN_ENC;
+  if(!enc) throw new Error('Plan payload not loaded.');
+  const salt = b64ToBytes(enc.salt), iv = b64ToBytes(enc.iv), ct = b64ToBytes(enc.ct);
+  const baseKey = await crypto.subtle.importKey('raw', new TextEncoder().encode(passphrase), 'PBKDF2', false, ['deriveKey']);
+  const key = await crypto.subtle.deriveKey(
+    { name:'PBKDF2', salt, iterations: enc.iter||150000, hash:'SHA-256' },
+    baseKey, { name:'AES-GCM', length:256 }, false, ['decrypt']
+  );
+  const plain = await crypto.subtle.decrypt({ name:'AES-GCM', iv }, key, ct);
+  return new TextDecoder().decode(plain);
+}
+
+document.getElementById('gateform').addEventListener('submit', async (e) => {
+  e.preventDefault();
+  const err = document.getElementById('err'), btn = document.getElementById('gobtn');
+  err.textContent = ''; btn.disabled = true; btn.textContent = 'Decrypting…';
+  try{
+    const html = await decryptPlan(document.getElementById('pass').value);
+    document.getElementById('gateview').hidden = true;
+    document.getElementById('planview').hidden = false;
+    document.getElementById('planframe').srcdoc = html;
+    document.title = 'Business plan — Metropolis';
+  }catch(_){
+    err.textContent = 'Incorrect passphrase. Try again.';
+    btn.disabled = false; btn.textContent = 'Open the plan';
+  }
+});
+</script>
+</body>
+</html>

@@ -1,0 +1,38 @@
+/* metropolis-site — shared design tokens (mirrors the pitch) */
+:root{
+  --plane:#efe9dd; --surface:#fbfaf6; --surface-2:#f4efe4; --card:#ffffff;
+  --ink:#1c1a15; --ink-2:#57503f; --muted:#8a8172; --hair:#e4ddcd; --hair-2:#d6cdb8;
+  --brand:#23324c; --brand-2:#33507a; --accent:#a97b3d; --accent-soft:#f3e9d6;
+  --good:#0a7a30;
+}
+*,*::before,*::after{box-sizing:border-box}
+[style*="display:flex"]>*,[style*="display:grid"]>*{min-width:0}
+:where(.grid,.flex)>*{min-width:0}
+:where(p,h1,h2,h3,h4,li,span){overflow-wrap:anywhere}
+:where(img,svg,iframe){max-width:100%}
+html{scroll-behavior:smooth}
+body{margin:0;background:var(--plane);color:var(--ink);
+  font-family:system-ui,-apple-system,"Segoe UI",sans-serif;line-height:1.55;-webkit-font-smoothing:antialiased}
+.serif{font-family:Georgia,"Times New Roman",serif}
+.wrap{max-width:1080px;margin-inline:auto;padding-inline:22px}
+.kicker{font-size:.72rem;letter-spacing:.16em;text-transform:uppercase;color:var(--accent);font-weight:700}
+.card{background:var(--card);border:1px solid var(--hair);border-radius:16px}
+.soft{background:var(--surface);border:1px solid var(--hair);border-radius:16px}
+a{color:var(--brand-2)}
+.btn{display:inline-block;cursor:pointer;border:1px solid var(--brand);background:var(--brand);color:#fff;
+  border-radius:11px;padding:.7em 1.2em;font-weight:700;font-size:.9rem;text-decoration:none}
+.btn:hover{background:#1a2740}
+.btn-ghost{background:transparent;color:var(--brand);}
+.btn-ghost:hover{background:var(--surface-2)}
+.chip{display:inline-flex;align-items:center;gap:.4em;font-size:.72rem;font-weight:700;padding:.25em .7em;border-radius:999px}
+.chip-o{background:var(--accent-soft);color:#8a5f28}
+.chip-b{background:rgba(42,120,214,.12);color:#1f5aa8}
+.nav{position:sticky;top:0;z-index:30;background:rgba(239,233,221,.86);backdrop-filter:blur(8px);border-bottom:1px solid var(--hair)}
+.nav .wrap{display:flex;align-items:center;gap:18px;height:56px}
+.nav a.navlink{color:var(--ink-2);text-decoration:none;font-size:.85rem;font-weight:600}
+.nav a.navlink:hover{color:var(--brand)}
+.brand{font-weight:700;font-size:1.1rem;letter-spacing:.02em}
+footer{color:var(--muted);font-size:.74rem;border-top:1px solid var(--hair);margin-top:40px}
+.grid{display:grid}
+.lead{font-size:1.06rem;color:var(--ink-2)}
+.rule{height:1px;background:var(--hair)}

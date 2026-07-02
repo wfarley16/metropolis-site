@@ -1,0 +1,4 @@
+# The plaintext plan is never committed — only its encrypted form (plan.enc.js) ships.
+plan.src.html
+node_modules/
+.DS_Store
