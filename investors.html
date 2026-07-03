@@ -14,8 +14,10 @@
   .field:focus{outline:2px solid var(--brand-2);border-color:var(--brand-2)}
   #err{color:#b23b3a;font-size:.82rem;min-height:1.2em;margin-top:8px}
   /* hub */
-  #hubview{height:100vh;display:flex;flex-direction:column}
+  #hubview{height:100vh;height:100dvh;display:flex;flex-direction:column}
   .hubtop{display:flex;align-items:center;gap:12px;height:52px;padding:0 16px;border-bottom:1px solid var(--hair);background:var(--surface);flex:0 0 auto}
+  .hubtop .sub{font-size:.8rem;color:var(--muted);white-space:nowrap;overflow:hidden;text-overflow:ellipsis;min-width:0;flex:1}
+  #navtoggle{display:none}
   .hublayout{flex:1;display:flex;min-height:0}
   .sidebar{width:280px;flex:0 0 auto;overflow-y:auto;border-right:1px solid var(--hair);background:var(--surface);padding:12px 10px}
   .content{flex:1;min-width:0;position:relative;background:var(--plane)}
@@ -32,7 +34,10 @@
   .navchildren{margin-left:12px;border-left:1px solid var(--hair);padding-left:6px}
   @media(max-width:720px){
     .hublayout{flex-direction:column}
-    .sidebar{width:auto;max-height:38vh;border-right:0;border-bottom:1px solid var(--hair)}
+    #navtoggle{display:inline-block}
+    .sidebar{display:none;width:auto;max-height:45vh;border-right:0;border-bottom:1px solid var(--hair)}
+    .sidebar.open{display:block}
+    .navrow{padding:.6em .55em}
   }
 </style>
 </head>
@@ -80,8 +85,11 @@
 <div id="hubview" hidden>
   <div class="hubtop">
     <a class="serif brand" href="index.html" style="text-decoration:none;color:inherit">metropolis</a>
-    <span style="font-size:.8rem;color:var(--muted)">· investor materials</span>
-    <button class="btn btn-ghost" style="margin-left:auto;padding:.4em .8em;font-size:.8rem" onclick="location.reload()">Lock</button>
+    <span class="sub">· investor materials</span>
+    <div style="margin-left:auto;display:flex;gap:8px;flex:0 0 auto">
+      <button id="navtoggle" class="btn btn-ghost" style="padding:.4em .8em;font-size:.8rem" aria-expanded="false" aria-controls="sidebar">☰ Docs</button>
+      <button class="btn btn-ghost" style="padding:.4em .8em;font-size:.8rem" onclick="location.reload()">Lock</button>
+    </div>
   </div>
   <div class="hublayout">
     <nav class="sidebar" id="sidebar" aria-label="Documents"></nav>
@@ -90,7 +98,7 @@
       <div class="placeholder" id="placeholder">
         <div>
           <div class="serif" style="font-size:1.3rem;color:var(--ink)" id="ph-title">Select a document</div>
-          <p style="font-size:.9rem;color:var(--muted);max-width:360px;margin:.5em auto 0" id="ph-msg">Pick an item on the left to open it.</p>
+          <p style="font-size:.9rem;color:var(--muted);max-width:360px;margin:.5em auto 0" id="ph-msg">Pick a document from the list to open it.</p>
         </div>
       </div>
     </div>
@@ -113,19 +121,21 @@ const DOC_CSS = `
   h1{font-family:Georgia,serif;font-size:clamp(1.7rem,4.5vw,2.4rem);line-height:1.12;margin:.2em 0 .3em}
   h2{font-family:Georgia,serif;font-size:1.32rem;margin:1.7em 0 .3em}
   h3{font-family:Georgia,serif;font-size:1.08rem;margin:1.3em 0 .2em}
+  p,h1,h2,h3,h4,li,a,code{overflow-wrap:anywhere}
   p{margin:.7em 0;color:var(--ink2)} strong{color:var(--ink)}
   ul,ol{margin:.6em 0;padding-left:22px} li{margin:.35em 0;color:var(--ink2)}
   a{color:var(--brand2)}
   code{background:var(--surface);border:1px solid var(--hair);border-radius:5px;padding:.05em .4em;font-size:.9em}
-  pre{background:var(--surface);border:1px solid var(--hair);border-radius:10px;padding:14px 16px;overflow:auto}
+  pre{background:var(--surface);border:1px solid var(--hair);border-radius:10px;padding:14px 16px;overflow-x:auto;-webkit-overflow-scrolling:touch}
   pre code{background:none;border:0;padding:0}
   blockquote{margin:1em 0;padding:.6em 1em;border-left:3px solid var(--accent);background:var(--card);border-radius:0 10px 10px 0;color:var(--ink2)}
   blockquote p{margin:.2em 0}
   hr{border:0;border-top:1px solid var(--hair);margin:2em 0}
-  table{border-collapse:collapse;width:100%;margin:12px 0;font-size:.92rem;display:block;overflow-x:auto}
+  table{border-collapse:collapse;width:100%;margin:12px 0;font-size:.92rem;display:block;overflow-x:auto;-webkit-overflow-scrolling:touch}
   th,td{text-align:left;padding:8px 11px;border-bottom:1px solid var(--hair);vertical-align:top}
   th{font-size:.72rem;text-transform:uppercase;letter-spacing:.04em;color:var(--muted)}
   img{max-width:100%}
+  @media(max-width:480px){.wrap{padding:28px 16px 56px}}
 `;
 function mdDoc(title, md){
   const body = window.marked ? marked.parse(md) : ('<pre>' + md.replace(/[&<>]/g,c=>({'&':'&amp;','<':'&lt;','>':'&gt;'}[c])) + '</pre>');
@@ -152,9 +162,18 @@ function showPlaceholder(title){
   document.getElementById('ph-msg').textContent = 'Draft in progress — this reference is coming soon.';
 }
 
+function setSidebarOpen(open){
+  document.getElementById('sidebar').classList.toggle('open', open);
+  document.getElementById('navtoggle').setAttribute('aria-expanded', String(open));
+}
+document.getElementById('navtoggle').addEventListener('click', () => {
+  setSidebarOpen(!document.getElementById('sidebar').classList.contains('open'));
+});
+
 async function openNode(node, rowEl){
   document.querySelectorAll('.navrow[aria-selected="true"]').forEach(r=>r.setAttribute('aria-selected','false'));
   if(rowEl) rowEl.setAttribute('aria-selected','true');
+  if(matchMedia('(max-width:720px)').matches) setSidebarOpen(false);
   if(!node.doc){ showPlaceholder(node.title); return; }
   try{
     const content = await decrypt(node.id);
