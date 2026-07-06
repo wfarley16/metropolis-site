@@ -41,11 +41,29 @@ the code.
     for classes; `src/styles.css` imports `…/ui-kit/styles/globals.css`.
 - **Bump polis** = change the `#<sha>` in `package.json` and re-`pnpm install`.
 - Sharp edges (all polis-side gaps; this repo works around them cleanly):
-  1. **pnpm fetches the github git dep over SSH.** In a keyless env `pnpm install`
-     fails with `git@github.com: Permission denied`. Force HTTPS via env-scoped git
-     config (touches no files):
-     `GIT_CONFIG_COUNT=2 GIT_CONFIG_KEY_0=url.https://github.com/.insteadOf GIT_CONFIG_VALUE_0=git@github.com: GIT_CONFIG_KEY_1=url.https://github.com/.insteadOf GIT_CONFIG_VALUE_1=ssh://git@github.com/`.
-     (The CI deploy uses a keyed checkout, so it doesn't need this.)
+  1. **polis is a PRIVATE repo, and pnpm resolves the git dep to the SSH form**
+     (`git@github.com:wfarley16/polis.git` — see the `version:` key in
+     `pnpm-lock.yaml`), so `pnpm install` clones over SSH and fails with
+     `git@github.com: Permission denied` wherever there's no SSH key / no repo
+     access. Two contexts:
+     - **Local keyless env:** force HTTPS via env-scoped git config (touches no
+       files) — only works where the ambient git already has HTTPS creds for the
+       private repo (e.g. a `gh`-authenticated machine):
+       `GIT_CONFIG_COUNT=2 GIT_CONFIG_KEY_0=url.https://github.com/.insteadOf GIT_CONFIG_VALUE_0=git@github.com: GIT_CONFIG_KEY_1=url.https://github.com/.insteadOf GIT_CONFIG_VALUE_1=ssh://git@github.com/`.
+     - **CI (GitHub Actions):** the default `GITHUB_TOKEN` has NO access to the
+       separate private `wfarley16/polis` repo, so the deploy workflow authenticates
+       the clone with a **read-only SSH deploy key on polis**, stored as the repo
+       secret **`POLIS_DEPLOY_KEY`**. The "Configure SSH deploy key for private
+       polis clone" step writes the key to `~/.ssh/polis_ci` (chmod 600), adds
+       `github.com` to `known_hosts`, exports
+       `GIT_SSH_COMMAND="ssh -i ~/.ssh/polis_ci -o IdentitiesOnly=yes …"` via
+       `$GITHUB_ENV` (so the install step inherits it), and sets a **polis-scoped**
+       rewrite `url."git@github.com:wfarley16/polis".insteadOf
+       "https://github.com/wfarley16/polis"`. The scope keeps metropolis-site's own
+       `actions/checkout` (default token) untouched. **If the CI build fails at
+       `pnpm install` with a polis permission/`Permission denied (publickey)`
+       error, the `POLIS_DEPLOY_KEY` secret is missing or the deploy key was
+       revoked.**
   2. **polis ships a heavy server-only dependency tree** (temporal/nestjs/prisma)
      that this marketing site never imports. `package.json`'s
      `pnpm.neverBuiltDependencies` skips their build scripts (no `prisma generate`,
@@ -92,11 +110,18 @@ the code.
   from "deploy from branch root" (legacy) to a **GitHub Actions** build+publish
   workflow (`.github/workflows/deploy.yml`): on push to `main` it runs
   `pnpm build` and publishes `dist/` to Pages.
-- **One-time manual step a PR cannot perform:** in repo Settings → Pages → "Build
-  and deployment", set **Source = "GitHub Actions"**. Until that flip, Pages keeps
-  serving the old branch-root build. (Alternative deploy model, if CI is
-  undesirable: commit the built `dist/` to a `/docs` folder and point legacy Pages
-  at it — messier, rebuild-on-every-edit.)
+- **Prerequisite secret:** the build clones the private `wfarley16/polis` dep, so
+  the repo must have a **`POLIS_DEPLOY_KEY`** secret — the private half of a
+  read-only SSH deploy key on polis. See "Consuming polis" sharp edge #1. Without
+  it the build job fails at `pnpm install` with `Permission denied (publickey)`.
+- **Pages source flip is automated.** The workflow's `actions/configure-pages@v5`
+  step runs with `enablement: true`, which sets the repo's Pages build type to
+  "workflow" via the API (using the `pages: write` permission), replacing the
+  legacy branch-root source — no manual Settings → Pages step is required. If token
+  perms ever block it, run once:
+  `gh api -X PUT repos/wfarley16/metropolis-site/pages -f build_type=workflow`.
+  (Alternative deploy model, if CI is undesirable: commit the built `dist/` to a
+  `/docs` folder and point legacy Pages at it — messier, rebuild-on-every-edit.)
 
 ## Commands
 
