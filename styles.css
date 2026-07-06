@@ -28,6 +28,7 @@ a{color:var(--brand-2)}
 .chip{display:inline-flex;align-items:center;gap:.4em;font-size:.72rem;font-weight:700;padding:.25em .7em;border-radius:999px}
 .chip-o{background:var(--accent-soft);color:#8a5f28}
 .chip-b{background:rgba(42,120,214,.12);color:#1f5aa8}
+.chip-g{background:rgba(10,122,48,.12);color:var(--good)}
 .nav{position:sticky;top:0;z-index:30;background:rgba(239,233,221,.86);backdrop-filter:blur(8px);border-bottom:1px solid var(--hair)}
 .nav .wrap{display:flex;align-items:center;gap:18px;height:56px}
 .nav a.navlink{color:var(--ink-2);text-decoration:none;font-size:.85rem;font-weight:600;white-space:nowrap;padding:.5em 0}

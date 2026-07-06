@@ -14,6 +14,12 @@ This file is the project's committed home for project-intrinsic agent knowledge:
 
 - To exercise the gated viewer locally, stub the decryptor in the browser console (never commit a stub): reassign `window.decrypt = async id => …`, returning a JSON nav tree for `id === 'nav'` and markdown for doc ids, then submit `#gateform` with any value. Mirror the TREE shape in `build.js` (`{id, title, doc, fmt, children}`).
 
+## Product landing pages (jobs.html pattern)
+
+- Product working names are swappable: define the name once as `window.__PRODUCT_NAME` in the page `<head>`; a script at the bottom stamps it into `[data-pname]` spans, the document title, and the waitlist form's `data-subject` + hidden `product` field. Never hardcode the name in body copy, and never use internal codenames on public pages.
+- Space pages are named after the space (`jobs.html`), not the product, so a product rename never breaks URLs or links.
+- Waitlist/contact forms all go through `forms.js` (`data-contact` + `data-subject`); it posts to the shared Formspree endpoint and auto-tags `source` with the page filename.
+
 ## Mobile layout conventions
 
 - Nav links that should disappear on small screens carry `nav-secondary` (hidden ≤640px). Nav CTA buttons use `.btn-nav` instead of inline padding/font styles so media queries can shrink them.
