@@ -6,9 +6,15 @@
 # static site (HTML/CSS/JS + public assets incl. the encrypted docs.enc.js,
 # CNAME, and .nojekyll), served from the same custom domain (gometropolis.ai).
 #
-# ONE-TIME MANUAL STEP (a PR cannot do this): in the repo Settings →
-# Pages → "Build and deployment", set Source = "GitHub Actions". Until that flip,
-# Pages keeps serving the old branch-root build. See AGENTS.md > "Deploy".
+# PREREQUISITE SECRET: this build clones the PRIVATE wfarley16/polis git
+# dependency, which the default GITHUB_TOKEN cannot access. A read-only SSH
+# deploy key on wfarley16/polis is provisioned; its private key is stored as the
+# Actions secret POLIS_DEPLOY_KEY. The "Configure SSH deploy key" step below
+# installs it and points git at it so pnpm can clone polis over SSH.
+#
+# The repo's Pages source is switched to "GitHub Actions" automatically by the
+# "Configure Pages" step (enablement: true) — no manual Settings → Pages flip is
+# needed. See AGENTS.md > "Deploy".
 name: Deploy site to Pages
 
 on:
@@ -45,14 +51,45 @@ jobs:
           node-version: 22
           cache: pnpm
 
-      # polis is a public https git dependency, so no SSH keys are needed. Its
-      # heavy server-only packages (prisma/temporal) are marked neverBuilt in
+      # polis is a PRIVATE git dependency (wfarley16/polis). The default
+      # GITHUB_TOKEN has no access to it, and pnpm resolves the dep to the SSH
+      # form (git@github.com:wfarley16/polis.git — see pnpm-lock.yaml), so the
+      # clone fails in CI. Install the read-only deploy key (POLIS_DEPLOY_KEY),
+      # trust github.com, and point git at the key via GIT_SSH_COMMAND (exported
+      # through $GITHUB_ENV so the install step inherits it). The insteadOf
+      # rewrite is scoped to the polis repo path only, so any https form of the
+      # dep also goes over the key — and metropolis-site's own actions/checkout
+      # (a different repo, over the default token) is left untouched.
+      - name: Configure SSH deploy key for private polis clone
+        run: |
+          mkdir -p ~/.ssh
+          chmod 700 ~/.ssh
+          printf '%s\n' "$POLIS_DEPLOY_KEY" > ~/.ssh/polis_ci
+          chmod 600 ~/.ssh/polis_ci
+          ssh-keyscan -t rsa,ed25519 github.com >> ~/.ssh/known_hosts 2>/dev/null
+          git config --global url."git@github.com:wfarley16/polis".insteadOf "https://github.com/wfarley16/polis"
+          echo "GIT_SSH_COMMAND=ssh -i $HOME/.ssh/polis_ci -o IdentitiesOnly=yes -o UserKnownHostsFile=$HOME/.ssh/known_hosts" >> "$GITHUB_ENV"
+        env:
+          POLIS_DEPLOY_KEY: ${{ secrets.POLIS_DEPLOY_KEY }}
+
+      # Its heavy server-only packages (prisma/temporal) are marked neverBuilt in
       # package.json, so this install stays fast and runs no native builds.
       - name: Install dependencies
         run: pnpm install --no-frozen-lockfile
 
       - name: Build
         run: pnpm build
+
+      # Sets the repo's Pages source to "GitHub Actions" (replacing the legacy
+      # branch-root source) and exports Pages metadata for the deploy job.
+      # enablement: true makes the action set the Pages build type to "workflow"
+      # via the API (needs the pages: write permission granted above), so no
+      # manual Settings → Pages flip is required. If token perms ever block this,
+      # run once: gh api -X PUT repos/wfarley16/metropolis-site/pages -f build_type=workflow
+      - name: Configure Pages
+        uses: actions/configure-pages@v5
+        with:
+          enablement: true
 
       - name: Upload Pages artifact
         uses: actions/upload-pages-artifact@v3
