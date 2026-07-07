@@ -8,11 +8,7 @@ import {
   ThemeProvider,
 } from "@polis/ui-kit";
 import {
-  FeatureGrid,
   GatedHub,
-  HighlightBanner,
-  MarketingHero,
-  MarketingSection,
   useGatedHub,
 } from "@polis/marketing-site-kit";
 import { metropolisBrand } from "../brand";
@@ -72,63 +68,6 @@ export function InvestorsApp(): React.JSX.Element {
             </a>
           </div>
         </header>
-      ) : null}
-
-      {!unlocked ? (
-        <>
-          <MarketingHero
-            align="left"
-            eyebrow="The thesis"
-            title="An AI-native venture studio building a portfolio of companies on one shared engine."
-            subtitle="metropolis is an AI-native venture studio — we build AI-native companies on a shared corporate center (market research, product, finance, engineering, recruiting, marketing), and the pieces are reusable, so the same engine that builds one company builds the next. Our first proof is metropolis itself: we're building the studio with the studio."
-          />
-
-          <MarketingSection
-            align="left"
-            eyebrow="How it works"
-            title="One engine, a portfolio, and humans governing the work"
-          >
-            <FeatureGrid
-              minColumnWidth={240}
-              items={[
-                {
-                  title: "The corporate center",
-                  description:
-                    "An AI-native back office (market research, product/design, financial modeling, engineering ideation, recruiting, marketing) every portfolio company inherits out of the box.",
-                },
-                {
-                  title: "Dogfood #1 — metropolis itself",
-                  tone: "brand",
-                  description:
-                    "We plan, staff, and build the studio using its own corporate center. It even recruits its own team. If it can build us, it can build the portfolio.",
-                },
-                {
-                  title: "First external vertical — artemis (job hunt)",
-                  description:
-                    "The first planning space we're entering, chosen because the hiring industry is broken. A domain expert governs it.",
-                },
-                {
-                  title: "The operating model",
-                  tone: "soft",
-                  description:
-                    "Humans are heads of business units: they plan and govern while AI does the planning and, increasingly, the execution. Supervised autonomy.",
-                },
-                {
-                  title: "Cost-optimized by design",
-                  description:
-                    "Our context tooling — the knowledge vault plus structured planning — lets us run cheaper models and get the same, often better, results. Every portfolio company inherits a structurally lower AI cost base — a durable margin advantage that compounds as the portfolio grows.",
-                },
-              ]}
-            />
-          </MarketingSection>
-
-          <HighlightBanner eyebrow="The bigger picture" tone="muted">
-            The corporate center isn't specific to planning. The same machinery
-            can stand up an entirely different portfolio — infrastructure for
-            building AI-native companies, the way the last era rented out
-            infrastructure for building web ones.
-          </HighlightBanner>
-        </>
       ) : null}
 
       <div className={unlocked ? "" : "mx-auto w-full max-w-4xl px-6 py-4"}>
